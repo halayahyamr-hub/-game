@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غرفة الهروب: القوى داخل السوائل</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --btn-blue: #0284c7;
+            --btn-hover: #0369a1;
+            --correct-green: #22c55e;
+            --wrong-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--accent-blue);
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: 0;
+        }
+
+        /* واجهة البداية */
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .start-icon {
+            font-size: 3.5rem;
+            margin: 10px 0;
+        }
+
+        .primary-btn {
+            background-color: var(--btn-blue);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        /* واجهة الأسئلة */
+        .quiz-container {
+            display: none;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .timer-box {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background-color: #334155;
+            border-radius: 8px;
+            height: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background-color: var(--accent-blue);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #334155;
+            color: var(--text-main);
+            border: 1px solid #475569;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+        }
+
+        .option-btn:hover {
+            background-color: #475569;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            min-height: 24px;
+        }
+
+        /* واجهة النهاية */
+        .win-screen {
+            display: none;
+        }
+
+        .win-screen h2 {
+            color: var(--correct-green);
+            font-size: 1.5rem;
+        }
+
+        .time-results {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <!-- 1. واجهة البداية -->
+    <div id="start-screen" class="start-screen">
+        <div class="header">
+            <h1>🔐 غرفة الهروب: القوى داخل السوائل</h1>
+            <p>تحدى الوقت وفك تشفير نظام الطوارئ قبل تسرب الموائع!</p>
+        </div>
+        <div class="start-icon">🧪⚡</div>
+        <p style="font-size: 0.9rem; color: var(--text-sub); line-height: 1.6;">
+            • تحتوي اللعبة على <strong>10 مراحل متتالية</strong>.<br>
+            • لديك <strong>15 ثانية</strong> فقط لكل سؤال.<br>
+            • سيتم إظهار وقتك الإجمالي في النهاية.
+        </p>
+        <button class="primary-btn" onclick="startGame()">ابدأ اللعب الآن 🚀</button>
+    </div>
+
+    <!-- 2. واجهة اللعب والأسئلة -->
+    <div id="quiz-container" class="quiz-container">
+        <div class="status-bar">
+            <span id="stage-number" style="color: var(--accent-blue);">المرحلة 1 من 10</span>
+            <span class="timer-box" id="timer">⏱️ 15 ثانية</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="question-box" id="question">جاري تحميل السؤال...</div>
+
+        <div class="options-container" id="options"></div>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- 3. واجهة الفوز -->
+    <div id="win-screen" class="win-screen">
+        <h2>🎉 مبروك! لقد هربت بنجاح من المختبر!</h2>
+        <p style="color: var(--text-sub); font-size: 0.9rem;">أتقنت جميع مفاهيم القوى داخل الموائع بنجاح.</p>
+        <div class="time-results">
+            <p style="margin:0;">⏱️ إجمالي الوقت المستغرق:</p>
+            <h3 id="total-time-display" style="color: var(--accent-blue); font-size: 1.8rem; margin: 10px 0;">0 ثانية</h3>
+        </div>
+        <button class="primary-btn" onclick="restartGame()">إعادة اللعب 🔄</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "1️⃣ ماذا يحدث لضغط السائل كلما زاد العمق؟",
+            options: ["يزداد الضغط", "يقل الضغط", "يبقى ثابتًا"],
+            answer: 0
+        },
+        {
+            question: "2️⃣ أي المبادئ ينص على أن الضغط المطبق على سائل محصور ينقل بالتساوي لجميع أجزائه؟",
+            options: ["مبدأ أرشميدس", "مبدأ باسكال", "قانون برنولي"],
+            answer: 1
+        },
+        {
+            question: "3️⃣ تعتمد قوة الطفو المؤثرة على جسم مغمور في سائل على:",
+            options: ["كتلة الجسم فقط", "وزن السائل المزيح", "لون السائل"],
+            answer: 1
+        },
+        {
+            question: "4️⃣ الظاهرة التي تجعل سطح السائل يتصرف كأنه غشاء مرن مشدود هي:",
+            options: ["اللزوجة", "التوتر السطحي", "الخاصية الشعرية"],
+            answer: 1
+        },
+        {
+            question: "5️⃣ مقياس مقاومة السائل للتدفق والجريان يسمى:",
+            options: ["اللزوجة", "الضغط", "الكتلة الحجمية"],
+            answer: 0
+        },
+        {
+            question: "6️⃣ قوة التجاذب التي تؤثر بها الجزيئات المماثلة بعضها في بعض تسمى:",
+            options: ["قوى التلاصق", "قوى التماسك", "قوى الطفو"],
+            answer: 1
+        },
+        {
+            question: "7️⃣ ارتفاع السوائل في الأنابيب الضيقة يُعرف بـ:",
+            options: ["الخاصية الشعرية", "مبدأ باسكال", "الضغط الجوي"],
+            answer: 0
+        },
+        {
+            question: "8️⃣ إذا كانت قوة الطفو أصغر من وزن الجسم، فإن الجسم:",
+            options: ["يطفو على السطح", "ينغمر وينزل للقاع", "يبقى معلقاً في المنتصف"],
+            answer: 1
+        },
+        {
+            question: "9️⃣ وحدة قياس الضغط في النظام الدولي (SI) هي:",
+            options: ["النيوتن (N)", "الباسكال (Pa)", "الجول (J)"],
+            answer: 1
+        },
+        {
+            question: "🔟 المكبس الهيدروليكي يعتبر تطبيقاً عملياً على:",
+            options: ["مبدأ باسكال", "مبدأ أرشميدس", "قانون كولوم"],
+            answer: 0
+        }
+    ];
+
+    let currentQuestion = 0;
+    let timeLeft = 15;
+    let timerInterval = null;
+    let totalTimeSeconds = 0;
+    let gameTimerInterval = null;
+
+    function startGame() {
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("quiz-container").style.display = "block";
+        startOverallTimer();
+        loadQuestion();
+    }
+
+    function startOverallTimer() {
+        totalTimeSeconds = 0;
+        clearInterval(gameTimerInterval);
+        gameTimerInterval = setInterval(() => {
+            totalTimeSeconds++;
+        }, 1000);
+    }
+
+    function startQuestionTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 15;
+        document.getElementById("timer").innerText = `⏱️ ${timeLeft} ثانية`;
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById("timer").innerText = `⏱️ ${timeLeft} ثانية`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timeOutAction();
+            }
+        }, 1000);
+    }
+
+    function timeOutAction() {
+        const feedback = document.getElementById("feedback");
+        feedback.innerText = "⏳ انتهى الوقت! أعد محاولة هذا السؤال.";
+        feedback.style.color = "var(--wrong-red)";
+        
+        setTimeout(() => {
+            loadQuestion();
+        }, 1200);
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQuestion];
+        document.getElementById("stage-number").innerText = `المرحلة ${currentQuestion + 1} من ${questions.length}`;
+        document.getElementById("question").innerText = q.question;
+        
+        const optionsContainer = document.getElementById("options");
+        optionsContainer.innerHTML = "";
+
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(index);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById("feedback").innerText = "";
+        document.getElementById("progress").style.width = `${((currentQuestion) / questions.length) * 100}%`;
+        
+        startQuestionTimer();
+    }
+
+    function selectOption(selectedIndex) {
+        const q = questions[currentQuestion];
+        const feedback = document.getElementById("feedback");
+
+        if (selectedIndex === q.answer) {
+            clearInterval(timerInterval);
+            feedback.innerText = "✅ إجابة صحيحة!";
+            feedback.style.color = "var(--correct-green)";
+            
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    loadQuestion();
+                } else {
+                    showWinScreen();
+                }
+            }, 700);
+        } else {
+            feedback.innerText = "❌ إجابة خاطئة! حاول مرة أخرى.";
+            feedback.style.color = "var(--wrong-red)";
+        }
+    }
+
+    function showWinScreen() {
+        clearInterval(timerInterval);
+        clearInterval(gameTimerInterval);
+        
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("win-screen").style.display = "block";
+        
+        const minutes = Math.floor(totalTimeSeconds / 60);
+        const seconds = totalTimeSeconds % 60;
+        let timeString = "";
+        
+        if (minutes > 0) {
+            timeString = `${minutes} دقيقة و ${seconds} ثانية`;
+        } else {
+            timeString = `${seconds} ثانية`;
+        }
+        
+        document.getElementById("total-time-display").innerText = timeString;
+    }
+
+    function restartGame() {
+        currentQuestion = 0;
+        document.getElementById("win-screen").style.display = "none";
+        document.getElementById("start-screen").style.display = "flex";
+    }
+</script>
+
+</body>
+</html>
