@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مختبر قوى الموائع والظواهر السطحية التفاعلي</title>
+  <style>
+    :root {
+      --bg-dark: #070b12;
+      --card-bg: rgba(13, 21, 39, 0.95);
+      --card-inner: #131d33;
+      --accent-blue: #0284c7;
+      --accent-cyan: #38bdf8;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+      --accent-emerald: #10b981;
+      --text-main: #f3f4f6;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body { 
+      background-color: var(--bg-dark); 
+      /* خلفية تقنية معملية ثلاثية الأبعاد شبكية */
+      background-image: 
+        radial-gradient(circle at 50% 30%, rgba(2, 132, 199, 0.15) 0%, transparent 70%),
+        linear-gradient(rgba(2, 132, 199, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(2, 132, 199, 0.05) 1px, transparent 1px);
+      background-size: 100% 100%, 30px 30px, 30px 30px;
+      color: var(--text-main); 
+      padding: 20px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+    }
+    
+    .container { 
+      width: 100%; 
+      max-width: 1100px; 
+      background-color: var(--card-bg); 
+      border-radius: 12px; 
+      border: 1px solid rgba(56, 189, 248, 0.2); 
+      padding: 25px; 
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 15px rgba(2, 132, 199, 0.2); 
+      backdrop-filter: blur(10px);
+    }
+    
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+    .header h1 { font-size: 1.8rem; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .header p { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; background-color: var(--bg-dark); padding: 6px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .tab-btn { flex: 1; min-width: 130px; padding: 12px 10px; background: transparent; border: none; color: var(--text-muted); font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; text-align: center; }
+    .tab-btn.active { background-color: var(--accent-blue); color: white; box-shadow: 0 0 12px rgba(2, 132, 199, 0.6); }
+
+    .tab-content { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .tab-content.active { display: grid; }
+    @media (max-width: 850px) { .tab-content.active { grid-template-columns: 1fr; } }
+
+    .panel { background-color: var(--card-inner); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .panel-title { font-size: 1.1rem; color: var(--accent-amber); margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+    .control-group { margin-bottom: 18px; }
+    .control-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+    .control-group input[type="range"] { width: 100%; accent-color: var(--accent-cyan); cursor: pointer; }
+    .control-group select { width: 100%; padding: 10px; background-color: var(--bg-dark); border: 1px solid var(--border-color); color: white; border-radius: 6px; outline: none; }
+
+    .display-box { background-color: var(--bg-dark); border-radius: 6px; padding: 15px; text-align: center; border: 1px solid var(--border-color); margin-top: 15px; }
+    .display-value { font-size: 1.5rem; font-weight: bold; color: var(--accent-cyan); }
+
+    .canvas-container { width: 100%; height: 280px; background-color: var(--bg-dark); border-radius: 6px; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color); }
+
+    .info-section { grid-column: 1 / -1; background-color: var(--card-inner); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-top: 10px; }
+    .info-title { color: var(--accent-cyan); font-weight: bold; margin-bottom: 8px; font-size: 1rem; }
+    .info-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    .btn-action { width: 100%; padding: 12px; background-color: var(--accent-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; font-size: 0.9rem; }
+    .btn-action:hover { background-color: #0369a1; }
+    .btn-action:disabled { background-color: #334155; cursor: not-allowed; }
+
+    /* Simulation Container Elements */
+    .tank { width: 160px; height: 180px; border: 3px solid #64748b; border-top: none; position: relative; background: rgba(2, 132, 199, 0.1); border-radius: 0 0 8px 8px; }
+    .liquid-fill { width: 100%; background: rgba(56, 189, 248, 0.4); position: absolute; bottom: 0; transition: all 0.3s ease; }
+    
+    /* Surface Tension Specifics */
+    .membrane { width: 100%; height: 4px; background: #38bdf8; position: absolute; top: 0; box-shadow: 0 0 10px #38bdf8; transition: all 0.3s; }
+    .paperclip { width: 60px; height: 12px; border: 2px solid #e2e8f0; border-radius: 10px; position: absolute; left: 50%; transform: translateX(-50%); transition: top 0.4s ease; box-shadow: 0 0 8px rgba(255, 255, 255, 0.5); }
+    
+    /* Capillary Action Tube */
+    .capillary-tube { width: 12px; height: 220px; border: 2px solid rgba(255, 255, 255, 0.5); border-bottom: none; position: absolute; bottom: 0; background: rgba(255,255,255,0.05); }
+    .capillary-liquid { width: 100%; background: rgba(56, 189, 248, 0.7); position: absolute; bottom: 0; height: 50%; transition: height 0.5s ease-out; }
+
+    /* Viscosity Ball */
+    .viscosity-ball { width: 22px; height: 22px; background: #fbbf24; border-radius: 50%; position: absolute; left: calc(50% - 11px); top: 10px; box-shadow: 0 0 10px #fbbf24; }
+
+    /* Evaporation / Condensation Particles */
+    .particle { position: absolute; background: rgba(56, 189, 248, 0.8); border-radius: 50%; pointer-events: none; }
+    .lid { width: 180px; height: 10px; background: #94a3b8; position: absolute; top: 40px; border-radius: 4px; box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+    .droplet { width: 8px; height: 10px; background: #38bdf8; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: absolute; top: 50px; opacity: 0; transition: opacity 0.5s; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🧪 مختبر قوى الموائع والظواهر السطحية التفاعلي</h1>
+    <p>استكشف التجارب الفيزيائية للسوائل: التوتر السطحي، الخاصية الشعرية، اللزوجة، التبخر، والتكثف</p>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">1. التوتر السطحي</button>
+    <button class="tab-btn" onclick="switchTab(1)">2. الخاصية الشعرية</button>
+    <button class="tab-btn" onclick="switchTab(2)">3. اللزوجة</button>
+    <button class="tab-btn" onclick="switchTab(3)">4. التبخر</button>
+    <button class="tab-btn" onclick="switchTab(4)">5. التكثف</button>
+  </div>
+
+  <!-- Tab 1: Surface Tension -->
+  <div class="tab-content active" id="tab-0">
+    <div class="panel">
+      <div>
+        <div class="panel-title">⚙️ لوحة التحكم بالسطح</div>
+        <div class="control-group">
+          <label>كتلة الجسم على السطح (مشبك الورق): <span id="weight-val">3</span> جرام</label>
+          <input type="range" id="weight-slider" min="1" max="10" value="3" oninput="updateSurfaceTension()">
+        </div>
+        <div class="control-group">
+          <label>إضافة خافض للتوتر السطحي (منظف/صابون):</label>
+          <select id="soap-select" onchange="updateSurfaceTension()">
+            <option value="none">بدون صابون (ماء نقي)</option>
+            <option value="low">كمية قليلة من الصابون</option>
+            <option value="high">تركيز عالٍ من الصابون</option>
+          </select>
+        </div>
+      </div>
+      <div class="display-box">
+        <div>حالة السطح والجسم:</div>
+        <div class="display-value" id="tension-status">طافٍ على الغشاء السطحي</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: مرونة الغشاء السطحي</div>
+      <div class="canvas-container">
+        <div class="tank">
+          <div class="liquid-fill" style="height: 70%;">
+            <div class="membrane" id="membrane"></div>
+          </div>
+          <div class="paperclip" id="paperclip" style="top: 25%;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📘 الشرح العلمي للتوتر السطحي</div>
+      <div class="info-text">
+        ينتج <b>التوتر السطحي</b> نتيجة اختلاف قوى التماسك بين جزيئات السائل. الجزيئات داخل عمق السائل تتعرض لقوى تجاذب متساوية من جميع الاتجاهات، بينما الجزيئات على السطح تتعرض لقوى سحب للداخل والأسفل فقط، مما يمتلك السطح مشدوداً مثل غشاء مرن مقاوم للاختراق. يعمل الصابون كـ <i>خافض للتوتر السطحي</i> حيث يقلل قوى التماسك بين جزيئات الماء مما يؤدي لانكسار الغشاء وغرق الأجسام.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Capillary Action -->
+  <div class="tab-content" id="tab-1">
+    <div class="panel">
+      <div>
+        <div class="panel-title">⚙️ متغيرات الأنبوب الشعري</div>
+        <div class="control-group">
+          <label>قطر الأنبوب الشعري (r): <span id="radius-val">2.0</span> ملم</label>
+          <input type="range" id="radius-slider" min="0.5" max="4.0" step="0.1" value="2.0" oninput="updateCapillary()">
+        </div>
+        <div class="control-group">
+          <label>نوع السائل والسطح:</label>
+          <select id="capillary-liquid-select" onchange="updateCapillary()">
+            <option value="water">ماء (قوى تلاصق عالية - ارتفاع)</option>
+            <option value="mercury">زئبق (قوى تماسك عالية - انخفاض)</option>
+          </select>
+        </div>
+      </div>
+      <div class="display-box">
+        <div>مستوى السائل داخل الأنبوب:</div>
+        <div class="display-value" id="capillary-height-val">+3.8 سم</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: الخاصية الشعرية</div>
+      <div class="canvas-container">
+        <div class="tank">
+          <div class="liquid-fill" id="cap-tank-fill" style="height: 40%;"></div>
+          <div class="capillary-tube" id="cap-tube" style="left: calc(50% - 6px);">
+            <div class="capillary-liquid" id="cap-liquid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📘 الشرح العلمي للخاصية الشعرية</div>
+      <div class="info-text">
+        <b>الخاصية الشعرية</b> هي ظاهرة ارتفاع أو انخفاض السائل داخل الأنابيب الضيقة جداً. تعتمد هذه الظاهرة على الموازنة بين نوعين من القوى:
+        <br>1. <b>قوى التلاصق (Adhesion):</b> التجاذب بين جزيئات السائل وجدار الأنبوب (مثل الماء والزجاج).
+        <br>2. <b>قوى التماسك (Cohesion):</b> التجاذب بين جزيئات السائل نفسها (مثل الزئبق).
+        <br>كلما قلّ قطر الأنبوب، كلما زاد ارتفاع المائع فيه تناسباً عكسياً.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Viscosity -->
+  <div class="tab-content" id="tab-2">
+    <div class="panel">
+      <div>
+        <div class="panel-title">⚙️ التحكم بالسائل ومقاومة الحركة</div>
+        <div class="control-group">
+          <label>نوع السائل (مستوى اللزوجة η):</label>
+          <select id="viscosity-select">
+            <option value="1">ماء (لزوجة منخفضة جداً)</option>
+            <option value="3">زيت المحركات (لزوجة متوسطة)</option>
+            <option value="7">عسل صافي (لزوجة عالية جداً)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>درجة الحرارة: <span id="temp-val">25</span> °C</label>
+          <input type="range" id="temp-slider" min="10" max="80" value="25" oninput="updateViscosityTemp()">
+        </div>
+        <button class="btn-action" id="drop-btn" onclick="runViscositySim()">إسقاط الكرة الحرة</button>
+      </div>
+      <div class="display-box">
+        <div>زمن السقوط حتى القاع:</div>
+        <div class="display-value" id="viscosity-time">0.00 ثانية</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: احتكاك الموائع (قانون ستوكس)</div>
+      <div class="canvas-container">
+        <div class="tank">
+          <div class="liquid-fill" id="visc-fluid" style="height: 90%;"></div>
+          <div class="viscosity-ball" id="visc-ball"></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📘 الشرح العلمي للزوجة وتأثير الحرارة</div>
+      <div class="info-text">
+        <b>اللزوجة</b> هي مقياس لمقاومة المائع للانسياب والاحتكاك الداخلي بين طبقاته. تتأثر اللزوجة بشكل مباشر بدرجة الحرارة:
+        <br>• في <b>السوائل:</b> تزداد الطاقة الحركية للجزيئات بالحرارة، مما يضعف قوى التماسك وينقص اللزوجة فتزداد سرعة حركة الكرة.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Evaporation -->
+  <div class="tab-content" id="tab-3">
+    <div class="panel">
+      <div>
+        <div class="panel-title">⚙️ عوامل معدل التبخر</div>
+        <div class="control-group">
+          <label>درجة الحرارة: <span id="evap-temp-val">30</span> °C</label>
+          <input type="range" id="evap-temp" min="10" max="90" value="30" oninput="updateEvaporation()">
+        </div>
+        <div class="control-group">
+          <label>مساحة المعرضة للسطح:</label>
+          <select id="evap-area" onchange="updateEvaporation()">
+            <option value="narrow">وعاء ضيق</option>
+            <option value="wide">وعاء عريض واسع</option>
+          </select>
+        </div>
+      </div>
+      <div class="display-box">
+        <div>معدل خروج جزيئات البخار:</div>
+        <div class="display-value" id="evap-rate-val">منخفض</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: افلات الجزيئات ذات الطاقة العالية</div>
+      <div class="canvas-container" id="evap-canvas">
+        <div class="tank" id="evap-tank" style="transition: width 0.3s;">
+          <div class="liquid-fill" style="height: 50%;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📘 الشرح العلمي للتبخر</div>
+      <div class="info-text">
+        <b>التبخر</b> هو تحول المائع من الحالة السائلة إلى الحالة الغازية عند أي درجة حرارة دون الوصول لدرجة الغليان. يحدث التبخر حصرياً عند <i>السطح</i> عندما تكتسب الجزيئات السطحية طاقة حركية كافية للتغلب على قوى التماسك مع الجزيئات المجاورة والإفلات للهواء. يزداد معدل التبخر بزيادة الحرارة ومساحة السطح.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 5: Condensation -->
+  <div class="tab-content" id="tab-4">
+    <div class="panel">
+      <div>
+        <div class="panel-title">⚙️ التحكم بالسطح البارد وتكثيف البخار</div>
+        <div class="control-group">
+          <label>حرارة السطح العلوي (الغطاء): <span id="cond-temp-val">10</span> °C</label>
+          <input type="range" id="cond-temp" min="0" max="40" value="10" oninput="updateCondensation()">
+        </div>
+        <div class="control-group">
+          <label>كمية البخار المتصاعد:</label>
+          <select id="vapor-amount" onchange="updateCondensation()">
+            <option value="low">بخار خفيف</option>
+            <option value="high">بخار كثيف جداً</option>
+          </select>
+        </div>
+      </div>
+      <div class="display-box">
+        <div>حالة التكثف وتشكّل القطرات:</div>
+        <div class="display-value" id="cond-status-val">تجمع قطرات سريع</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: تكون قطرات المطر والندى</div>
+      <div class="canvas-container" id="cond-canvas">
+        <div class="lid"></div>
+        <div class="droplet" id="drop-1" style="right: 35%;"></div>
+        <div class="droplet" id="drop-2" style="right: 50%;"></div>
+        <div class="droplet" id="drop-3" style="right: 65%;"></div>
+        <div class="tank" style="position: absolute; bottom: 10px;">
+          <div class="liquid-fill" style="height: 40%;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📘 الشرح العلمي للتكثف</div>
+      <div class="info-text">
+        <b>التكثف</b> هو العملية العكسية للتبخر، حيث يتحول البخار من الحالة الغازية إلى السائلة عندما يلامس سطحاً بارداً. يفقد جزيء الغاز طاقته الحركية، مما يسمح لقوى التماسك بين الجزيئات بالإمساك به مجدداً لتتجمع الجزيئات مشكلة قطرات مائية (مثل الندى والأمطار).
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Global Tab Switcher
+  function switchTab(index) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+      contents[i].classList.toggle('active', i === index);
+    });
+  }
+
+  /* --- Tab 1: Surface Tension --- */
+  function updateSurfaceTension() {
+    const weight = parseFloat(document.getElementById('weight-slider').value);
+    const soap = document.getElementById('soap-select').value;
+    document.getElementById('weight-val').innerText = weight;
+
+    const paperclip = document.getElementById('paperclip');
+    const membrane = document.getElementById('membrane');
+    const statusText = document.getElementById('tension-status');
+
+    let isSunk = false;
+
+    if (soap === 'high') {
+      isSunk = true;
+    } else if (soap === 'low' && weight > 4) {
+      isSunk = true;
+    } else if (soap === 'none' && weight > 8) {
+      isSunk = true;
+    }
+
+    if (isSunk) {
+      paperclip.style.top = '75%';
+      membrane.style.boxShadow = 'none';
+      membrane.style.background = 'rgba(56, 189, 248, 0.2)';
+      statusText.innerText = 'انكسر الغشاء - انغمار الجسم!';
+      statusText.style.color = 'var(--accent-rose)';
+    } else {
+      const stretch = 25 + (weight * 1.5);
+      paperclip.style.top = stretch + '%';
+      membrane.style.boxShadow = '0 0 12px #38bdf8';
+      membrane.style.background = '#38bdf8';
+      statusText.innerText = 'طافٍ على الغشاء السطحي';
+      statusText.style.color = 'var(--accent-cyan)';
+    }
+  }
+
+  /* --- Tab 2: Capillary Action --- */
+  function updateCapillary() {
+    const r = parseFloat(document.getElementById('radius-slider').value);
+    const liquid = document.getElementById('capillary-liquid-select').value;
+    document.getElementById('radius-val').innerText = r.toFixed(1);
+
+    const tube = document.getElementById('cap-tube');
+    const capLiquid = document.getElementById('cap-liquid');
+    const tankFill = document.getElementById('cap-tank-fill');
+    const heightVal = document.getElementById('capillary-height-val');
+
+    // Visual width scaling for tube
+    const tubeWidth = Math.max(6, r * 5);
+    tube.style.width = tubeWidth + 'px';
+    tube.style.left = `calc(50% - ${tubeWidth / 2}px)`;
+
+    if (liquid === 'water') {
+      tankFill.style.background = 'rgba(56, 189, 248, 0.4)';
+      capLiquid.style.background = 'rgba(56, 189, 248, 0.85)';
+      
+      // Inverse proportion height calculation
+      const heightPercent = Math.min(92, 35 + (25 / r));
+      capLiquid.style.height = heightPercent + '%';
+      const realCm = ((heightPercent - 40) / 10).toFixed(1);
+      heightVal.innerText = '+' + realCm + ' سم (ارتفاع)';
+      heightVal.style.color = 'var(--accent-cyan)';
+    } else {
+      // Mercury - Cohesion > Adhesion (Depression)
+      tankFill.style.background = 'rgba(148, 163, 184, 0.5)';
+      capLiquid.style.background = 'rgba(148, 163, 184, 0.9)';
+      
+      const heightPercent = Math.max(10, 40 - (15 / r));
+      capLiquid.style.height = heightPercent + '%';
+      const realCm = ((40 - heightPercent) / 10).toFixed(1);
+      heightVal.innerText = '-' + realCm + ' سم (انخفاض)';
+      heightVal.style.color = 'var(--accent-amber)';
+    }
+  }
+
+  /* --- Tab 3: Viscosity --- */
+  function updateViscosityTemp() {
+    document.getElementById('temp-val').innerText = document.getElementById('temp-slider').value;
+  }
+
+  function runViscositySim() {
+    const viscType = parseFloat(document.getElementById('viscosity-select').value);
+    const temp = parseFloat(document.getElementById('temp-slider').value);
+    const ball = document.getElementById('visc-ball');
+    const btn = document.getElementById('drop-btn');
+    const timeDisplay = document.getElementById('viscosity-time');
+
+    btn.disabled = true;
+    ball.style.transition = 'none';
+    ball.style.top = '10px';
+
+    // Calculate viscosity factor depending on temperature
+    const tempFactor = Math.max(0.2, 1 - ((temp - 10) / 90));
+    const duration = (viscType * tempFactor * 1.8).toFixed(2);
+
+    setTimeout(() => {
+      ball.style.transition = `top ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+      ball.style.top = '220px';
+      timeDisplay.innerText = duration + ' ثانية';
+
+      setTimeout(() => {
+        btn.disabled = false;
+      }, duration * 1000);
+    }, 50);
+  }
+
+  /* --- Tab 4: Evaporation --- */
+  let evapInterval = null;
+  function updateEvaporation() {
+    const temp = parseInt(document.getElementById('evap-temp').value);
+    const area = document.getElementById('evap-area').value;
+    document.getElementById('evap-temp-val').innerText = temp;
+
+    const tank = document.getElementById('evap-tank');
+    const rateText = document.getElementById('evap-rate-val');
+
+    if (area === 'wide') {
+      tank.style.width = '240px';
+    } else {
+      tank.style.width = '140px';
+    }
+
+    if (temp > 60) {
+      rateText.innerText = 'عالي جداً ⚡';
+      rateText.style.color = 'var(--accent-rose)';
+    } else if (temp > 35) {
+      rateText.innerText = 'متوسط 💧';
+      rateText.style.color = 'var(--accent-amber)';
+    } else {
+      rateText.innerText = 'منخفض 🧊';
+      rateText.style.color = 'var(--accent-cyan)';
+    }
+  }
+
+  function createEvapParticle() {
+    const canvas = document.getElementById('evap-canvas');
+    if (!canvas || !document.getElementById('tab-3').classList.contains('active')) return;
+
+    const temp = parseInt(document.getElementById('evap-temp').value);
+    const spawnChance = temp / 100;
+
+    if (Math.random() < spawnChance) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      const size = Math.random() * 4 + 4;
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+
+      const canvasRect = canvas.getBoundingClientRect();
+      const randomX = Math.random() * (canvasRect.width - 60) + 30;
+      particle.style.left = randomX + 'px';
+      particle.style.bottom = '90px';
+
+      canvas.appendChild(particle);
+
+      let pos = 90;
+      let opacity = 1;
+      const speed = (temp / 30) + Math.random() * 1.5;
+
+      const anim = setInterval(() => {
+        pos += speed;
+        opacity -= 0.02;
+        particle.style.bottom = pos + 'px';
+        particle.style.opacity = opacity;
+
+        if (opacity <= 0 || pos > 260) {
+          clearInterval(anim);
+          particle.remove();
+        }
+      }, 30);
+    }
+  }
+  setInterval(createEvapParticle, 100);
+
+  /* --- Tab 5: Condensation --- */
+  function updateCondensation() {
+    const lidTemp = parseInt(document.getElementById('cond-temp').value);
+    const vaporAmount = document.getElementById('vapor-amount').value;
+    document.getElementById('cond-temp-val').innerText = lidTemp;
+
+    const drops = document.querySelectorAll('.droplet');
+    const statusVal = document.getElementById('cond-status-val');
+
+    let opacityVal = 0;
+    if (lidTemp < 20) {
+      opacityVal = (20 - lidTemp) / 20;
+      if (vaporAmount === 'high') opacityVal = Math.min(1, opacityVal + 0.3);
+      statusVal.innerText = 'تكثف سريع وتجمع قطرات';
+      statusVal.style.color = 'var(--accent-cyan)';
+    } else {
+      statusVal.innerText = 'ضعيف (السطح دافئ)';
+      statusVal.style.color = 'var(--text-muted)';
+    }
+
+    drops.forEach((drop, idx) => {
+      drop.style.opacity = opacityVal;
+      drop.style.transform = `scale(${0.8 + opacityVal * 0.5})`;
+    });
+  }
+
+  // Init all tabs calculations on load
+  window.onload = function() {
+    updateSurfaceTension();
+    updateCapillary();
+    updateViscosityTemp();
+    updateEvaporation();
+    updateCondensation();
+  };
+</script>
+</body>
+</html>
