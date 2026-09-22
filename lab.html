@@ -1,29 +1,744 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>فتح الرابط</title>
-    <style>
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            font-size: 16px;
-            color: #ffffff;
-            background-color: #1a73e8;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-family: Arial, sans-serif;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #1557b0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مختبر القوى داخل السوائل التفاعلي</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: #111827;
+      --card-inner: #1f293d;
+      --accent-cyan: #00d2ff;
+      --accent-blue: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 20px 25px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Top Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffffff;
+    }
+    .header-icon {
+      background: #0284c7;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+    }
+    .header-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Nav Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      background-color: #080c14;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab-btn.active {
+      background-color: var(--accent-blue);
+      color: white;
+    }
+
+    /* Grid Layout */
+    .tab-content { display: none; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .tab-content.active { display: grid; }
+
+    .panel {
+      background-color: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-title {
+      font-size: 1rem;
+      color: #f59e0b;
+      margin-bottom: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Controls */
+    .control-group { margin-bottom: 18px; }
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .control-group select {
+      width: 100%;
+      padding: 10px;
+      background-color: #0f172a;
+      border: 1px solid var(--border-color);
+      color: white;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+    }
+
+    /* Display Boxes & Displays */
+    .value-display-box {
+      margin-top: auto;
+      background-color: #0b0f19;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+    }
+    .value-display-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+    .value-display-number { font-size: 1.5rem; color: var(--accent-cyan); font-weight: bold; }
+    .value-display-unit { font-size: 0.8rem; color: #f59e0b; margin-top: 4px; }
+
+    .btn-action {
+      width: 100%;
+      padding: 12px;
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    .btn-action:hover { background-color: #0369a1; }
+
+    /* Canvas Simulation Container */
+    .canvas-container {
+      width: 100%;
+      height: 250px;
+      background-color: #0b0f19;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Overlay Labels for Canvas */
+    .draw-label {
+      position: absolute;
+      font-size: 0.72rem;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Info Footer Section */
+    .info-section {
+      grid-column: 1 / -1;
+      background-color: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 5px;
+    }
+    .info-title { color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+    .info-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
+    .info-formula { background: #0b0f19; padding: 8px 12px; border-radius: 4px; font-family: monospace; color: #38bdf8; display: inline-block; margin: 8px 0; font-size: 0.85rem; }
+
+    /* ---------------- SIMULATION DESIGNS ---------------- */
+    /* 1. Liquid Pressure */
+    .pressure-tank {
+      width: 140px;
+      height: 160px;
+      border: 2px solid #38bdf8;
+      border-top: none;
+      position: relative;
+      background: rgba(2, 132, 199, 0.4);
+    }
+    .pressure-sensor {
+      width: 14px;
+      height: 14px;
+      background: #f59e0b;
+      border-radius: 50%;
+      position: absolute;
+      left: calc(50% - 7px);
+      transition: top 0.2s;
+    }
+    .pressure-line {
+      position: absolute;
+      width: 100%;
+      border-top: 1px dashed rgba(255, 255, 255, 0.3);
+      left: 0;
+    }
+    .jet-line {
+      position: absolute;
+      border: 1px solid #38bdf8;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 100% 0;
+      right: -40px;
+    }
+
+    /* 2. Buoyancy */
+    .buoyancy-tank {
+      width: 150px;
+      height: 160px;
+      border: 2px solid #38bdf8;
+      border-top: none;
+      position: relative;
+      background: rgba(2, 132, 199, 0.4);
+    }
+    .buoyant-object {
+      width: 50px;
+      height: 50px;
+      background: #f59e0b;
+      position: absolute;
+      left: calc(50% - 25px);
+      transition: top 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .arrow-down {
+      position: absolute;
+      width: 2px;
+      height: 25px;
+      background: #ef4444;
+      left: 50%;
+      top: 50px;
+    }
+    .arrow-up {
+      position: absolute;
+      width: 2px;
+      height: 25px;
+      background: #38bdf8;
+      left: 50%;
+      top: -25px;
+    }
+
+    /* 3. Pascal Principle */
+    .pascal-system {
+      display: flex;
+      align-items: flex-end;
+      width: 220px;
+      height: 140px;
+    }
+    .pascal-small { width: 40px; height: 120px; border: 2px solid #38bdf8; border-top: none; position: relative; background: rgba(2, 132, 199, 0.3); }
+    .pascal-pipe { width: 60px; height: 30px; border-bottom: 2px solid #38bdf8; border-top: 2px solid #38bdf8; background: rgba(2, 132, 199, 0.5); }
+    .pascal-large { width: 100px; height: 120px; border: 2px solid #38bdf8; border-top: none; position: relative; background: rgba(2, 132, 199, 0.3); }
+    .piston { position: absolute; width: 100%; height: 12px; background: #ef4444; transition: top 0.2s; }
+    .piston-large-head { position: absolute; width: 100%; height: 25px; background: #f59e0b; transition: top 0.2s; }
+
+    /* 4. Surface Tension */
+    .surface-bowl {
+      width: 240px;
+      height: 100px;
+      border: 2px solid #0284c7;
+      border-top: none;
+      border-radius: 0 0 120px 120px;
+      position: relative;
+      background: rgba(2, 132, 199, 0.3);
+      overflow: hidden;
+    }
+    .paperclip-clip {
+      width: 70px;
+      height: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      position: absolute;
+      left: calc(50% - 35px);
+      top: 10px;
+      transition: all 0.5s ease;
+      background: rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #fff;
+    }
+
+    /* 5. Viscosity */
+    .viscosity-tank {
+      width: 120px;
+      height: 170px;
+      border: 2px solid #38bdf8;
+      border-top: none;
+      position: relative;
+      background: rgba(2, 132, 199, 0.4);
+    }
+    .falling-ball {
+      width: 22px;
+      height: 22px;
+      background: #f59e0b;
+      border-radius: 50%;
+      position: absolute;
+      left: calc(50% - 11px);
+      top: 15px;
+    }
+
+    /* Status Custom Boxes */
+    .status-pill {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border: 1px solid transparent;
+    }
+    .status-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+    .status-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+
+    .dual-box {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .dual-box .value-display-box { flex: 1; }
+  </style>
 </head>
 <body>
 
-    <a href="https://share.gemini.google/CuJTfnpglSvX" target="_blank" class="btn">
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">
+        <span class="header-icon">🧪</span>
+        مختبر القوى داخل السوائل التفاعلي
+      </div>
+      <div class="header-subtitle">تجارب تفاعلية لحساب وتطبيق قوانين الموائع والسوائل</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">💧 1. ضغط السائل</button>
+    <button class="tab-btn" onclick="switchTab(1)">⚓ 2. قوة الطفو</button>
+    <button class="tab-btn" onclick="switchTab(2)">⚙️ 3. مبدأ باسكال</button>
+    <button class="tab-btn" onclick="switchTab(3)">💧 4. التوتر السطحي</button>
+    <button class="tab-btn" onclick="switchTab(4)">🧪 5. اللزوجة</button>
+  </div>
+
+  <!-- 1. ضغط السائل -->
+  <div class="tab-content active" id="tab-0">
+    <div class="panel">
+      <div class="panel-title">🧩 لوحة التحكم بالمتغيرات</div>
+      <div class="control-group">
+        <label><span>عمق الحساس ($h$):</span><span id="depth-text" style="color:var(--accent-cyan);">1.5 متر</span></label>
+        <input type="range" id="depth-range" min="0.5" max="3" step="0.1" value="1.5" oninput="runPressure()">
+      </div>
+      <div class="control-group">
+        <label><span>نوع السائل (الكثافة $\rho$):</span></label>
+        <select id="fluid-type" onchange="runPressure()">
+          <option value="1000">ماء عذب ($\rho = 1000 \text{ kg/m}^3$)</option>
+          <option value="1030">ماء البحر ($\rho = 1030 \text{ kg/m}^3$)</option>
+          <option value="13600">زئبق ($\rho = 13600 \text{ kg/m}^3$)</option>
+          <option value="800">زيت ($\rho = 800 \text{ kg/m}^3$)</option>
+        </select>
+      </div>
+      <div class="value-display-box">
+        <div class="value-display-title">الضغط عند عمق الحساس المحدد ($P$)</div>
+        <div class="value-display-number" id="p-val">Pa 14,715</div>
+        <div class="value-display-unit" id="p-atm">أو ما يعادل 0.15 atm</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: خزان ضغط السائل</div>
+      <div class="canvas-container">
+        <div class="draw-label" style="top: 15px; right: 25px;">خزان السائل المحوي</div>
+        <div class="pressure-tank">
+          <div class="pressure-line" style="top: 30%;"></div>
+          <div class="pressure-line" style="top: 60%;"></div>
+          <div class="pressure-sensor" id="sensor" style="top: 50%;">
+            <div class="draw-label" id="sensor-label" style="right: 20px; top: -5px;">عمق الحساس: 1.5m</div>
+          </div>
+          <div class="jet-line" style="top: 30%; width: 20px; height: 40px;"></div>
+          <div class="jet-line" style="top: 60%; width: 45px; height: 55px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📊 الشرح العلمي والتطبيقي للتجربة</div>
+      <div class="info-text">
+        يزداد ضغط السائل كلما زاد <b>عمق النقطة ($h$)</b> وزادت <b>كثافة السائل ($\rho$)</b>. يتولد هذا الضغط نتيجة وزن عمود السائل المؤثر عمودياً على وحدة المساحة تحت تأثير الجاذبية الأرضية.<br>
+        <div class="info-formula">القانون الرياضي: $P = \rho \times g \times h$</div><br>
+        • $P$: الضغط بالسائل (باسكال - Pa)<br>
+        • $\rho$: كثافة السائل ($\text{kg/m}^3$)<br>
+        • $g$: تسارع الجاذبية الأرضية ($9.81 \text{ m/s}^2$)<br>
+        • $h$: عمق النقطة داخل السائل (أمتار)
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. قوة الطفو -->
+  <div class="tab-content" id="tab-1">
+    <div class="panel">
+      <div class="panel-title">🧩 التحكم بخصائص الجسم والمائع</div>
+      <div class="control-group">
+        <label><span>حجم الجسم ($V$):</span><span style="color:var(--accent-cyan);">$0.002 \text{ m}^3$</span></label>
+        <input type="range" id="vol-range" min="0.001" max="0.005" step="0.0005" value="0.002" oninput="runBuoyancy()">
+      </div>
+      <div class="control-group">
+        <label><span>كتلة الجسم ($m$):</span><span id="mass-text" style="color:var(--accent-cyan);">1.5 كجم</span></label>
+        <input type="range" id="mass-range" min="0.5" max="5" step="0.1" value="1.5" oninput="runBuoyancy()">
+      </div>
+      <div class="control-group">
+        <label><span>السائل المغمور فيه:</span></label>
+        <select id="buoy-fluid" onchange="runBuoyancy()">
+          <option value="1000">ماء عذب ($1000 \text{ kg/m}^3$)</option>
+          <option value="1030">ماء البحر ($1030 \text{ kg/m}^3$)</option>
+        </select>
+      </div>
+      <div class="dual-box">
+        <div class="value-display-box">
+          <div class="value-display-title">وزن الجسم ($F_g$)</div>
+          <div class="value-display-number" id="fg-val" style="color:#ef4444;">N 14.7</div>
+        </div>
+        <div class="value-display-box">
+          <div class="value-display-title">قوة الطفو ($F_b$)</div>
+          <div class="value-display-number" id="fb-val" style="color:#38bdf8;">N 19.6</div>
+        </div>
+      </div>
+      <div class="status-pill status-green" id="buoy-status">حالة الجسم: يطفو على السطح ($F_b > F_g$)</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: تجربة أرشميدس والطفو</div>
+      <div class="canvas-container">
+        <div class="buoyancy-tank">
+          <div class="buoyant-object" id="b-obj" style="top: 20px;">
+            <span style="font-size:0.65rem; color:#fff; font-weight:bold;">الجسم</span>
+            <div class="arrow-up"><span class="draw-label" style="top:-20px; left:-25px; color:#38bdf8;">قوة الطفو Fb</span></div>
+            <div class="arrow-down"><span class="draw-label" style="top:25px; left:-18px; color:#ef4444;">الوزن Fg</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📊 الشرح العلمي لمبدأ أرشميدس</div>
+      <div class="info-text">
+        ينص مبدأ أرشميدس على أن "أي جسم مغمور كلياً أو جزئياً في مائع يتعرض لقوة طفو إلى الأعلى تساوي وزن المائع الذي أزاحه الجسم".<br>
+        <div class="info-formula">$F_{\text{buoyant}} = \rho_{\text{fluid}} \times V_{\text{displaced}} \times g$</div><br>
+        • إذا كانت قوة الطفو أكبر من الوزن: يطفو الجسم.<br>
+        • إذا كانت قوة الطفو أقل من الوزن: ينغمر الجسم إلى القاع.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. مبدأ باسكال -->
+  <div class="tab-content" id="tab-2">
+    <div class="panel">
+      <div class="panel-title">🧩 التحكم بالمكبس الهيدروليكي</div>
+      <div class="control-group">
+        <label><span>القوة المطبقة على الصغير ($F_1$):</span><span id="f1-text" style="color:var(--accent-cyan);">N 100</span></label>
+        <input type="range" id="f1-range" min="10" max="200" step="10" value="100" oninput="runPascal()">
+      </div>
+      <div class="control-group">
+        <label><span>مساحة المكبس الصغير ($A_1$):</span><span style="color:var(--accent-cyan);">$0.010 \text{ m}^2$</span></label>
+        <input type="range" id="a1-range" min="0.005" max="0.02" step="0.001" value="0.010" oninput="runPascal()">
+      </div>
+      <div class="control-group">
+        <label><span>مساحة المكبس الكبير ($A_2$):</span><span style="color:var(--accent-cyan);">$0.10 \text{ m}^2$</span></label>
+        <input type="range" id="a2-range" min="0.05" max="0.30" step="0.01" value="0.10" oninput="runPascal()">
+      </div>
+      <div class="value-display-box">
+        <div class="value-display-title">القوة المضاعفة الناتجة على المكبس الكبير ($F_2$)</div>
+        <div class="value-display-number" id="f2-val">N 1,000</div>
+        <div class="value-display-unit" id="ratio-val">نسبة مضاعفة القوة: الفائدة = 10.0 مرة</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: المكبس الهيدروليكي</div>
+      <div class="canvas-container">
+        <div class="pascal-system">
+          <div class="pascal-small">
+            <div class="draw-label" style="top:-25px; right:-10px; color:#ef4444;">F1 المطبقة</div>
+            <div class="piston" id="piston-small" style="top: 20px;"></div>
+          </div>
+          <div class="pascal-pipe"></div>
+          <div class="pascal-large">
+            <div class="draw-label" style="top:-25px; right:10px; color:#f59e0b;">F2 الناتجة</div>
+            <div class="piston-large-head" id="piston-large" style="top: 50px;">
+              <span style="font-size:0.65rem; color:#000; font-weight:bold; display:block; text-align:center;">الحمولة</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📊 الشرح العلمي لمبدأ باسكال</div>
+      <div class="info-text">
+        ينص مبدأ باسكال على أن "الضغط المطبق على مائع محصور ينقل بالتساوي وبدون نقصان إلى جميع نقاط المائع وجدران الوعاء الحاوي له".<br>
+        <div class="info-formula">$P_1 = P_2 \Rightarrow (F_1 / A_1) = (F_2 / A_2) \Rightarrow F_2 = F_1 \times (A_2 / A_1)$</div><br>
+        • يُستخدم هذا المبدأ في الرافعة الهيدروليكية ومكابح السيارات ومكابس الرفع الثقيل.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. التوتر السطحي -->
+  <div class="tab-content" id="tab-3">
+    <div class="panel">
+      <div class="panel-title">🧩 التحكم بخصائص السطح والمنظف</div>
+      <div class="control-group">
+        <label><span>وزن الكائن المستقر ($F_g$):</span><span style="color:var(--accent-cyan);">خفيف</span></label>
+        <input type="range" id="surf-weight" min="1" max="10" value="3" oninput="runSurface()">
+      </div>
+      <button class="btn-action" onclick="addSoap()">إضافة قطرة صابون / منظف للسائل</button>
+      <div class="status-pill status-green" id="surf-status">حالة المشبك: يطفو بفعل غشاء التوتر السطحي القوي</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: التوتر السطحي</div>
+      <div class="canvas-container">
+        <div class="draw-label" style="top: 20px; right: 30px;">غشاء التوتر السطحي</div>
+        <div class="surface-bowl">
+          <div class="paperclip-clip" id="paperclip">المشبك</div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📊 الشرح العلمي للتوتر السطحي</div>
+      <div class="info-text">
+        ينتج التوتر السطحي بسبب <b>قوى التماسك (Cohesion Forces)</b> بين جزيئات السائل. الجزيئات عند السطح تُسحب نحو الداخل والأسفل لعدم وجود جزيئات فوقها، مما يجعل السطح يتصرف كغشاء مرن مشدود.<br>
+        • عند إضافة الصابون أو المنظفات (Surfactants)، تتفكك قوى التماسك بين جزيئات الماء؛ فيتمزق غشاء التوتر السطحي فوراً ويغرق المشبك المستقر.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. اللزوجة -->
+  <div class="tab-content" id="tab-4">
+    <div class="panel">
+      <div class="panel-title">🧩 التحكم باللزوجة واختبار السقوط</div>
+      <div class="control-group">
+        <label><span>نوع السائل (مستوى اللزوجة $\eta$):</span></label>
+        <select id="visc-select" onchange="resetBall()">
+          <option value="0.5">ماء (لزوجة منخفضة جداً)</option>
+          <option value="1.5">زيت زيتون (لزوجة متوسطة)</option>
+          <option value="3.5">جليسرين / عسل (لزوجة عالية جداً)</option>
+        </select>
+      </div>
+      <button class="btn-action" onclick="dropBall()">إسقاط الكرة الآن</button>
+      <div class="value-display-box" style="margin-top: 20px;">
+        <div class="value-display-title">زمن وصول الكرة إلى القاع:</div>
+        <div class="value-display-number" id="timer-val">0.50 ثانية</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👁️ المحاكاة الحية: تجربة سقوط الكرات واللزوجة</div>
+      <div class="canvas-container">
+        <div class="draw-label" style="top: 15px; left: 20px;">سطح السائل</div>
+        <div class="draw-label" style="bottom: 15px; left: 20px;">قاع الوعاء</div>
+        <div class="viscosity-tank">
+          <div class="falling-ball" id="v-ball">
+            <span class="draw-label" style="right:25px; top:0px;">الكرة الساقطة</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="info-title">📊 الشرح العلمي لمفهوم اللزوجة</div>
+      <div class="info-text">
+        <b>اللزوجة (Viscosity)</b> هي مقياس لمقاومة المائع للتدفق والانسياب بسبب قوى الاحتكاك الداخلي بين طبقاته.<br>
+        • السوائل ذات اللزوجة العالية (مثل العسل والجليسرين) تعيق حركة الأجسام داخلها وتتسبب في إبطاء سرعة سقوطها بشكل ملحوظ مقارنة بالسوائل منخفضة اللزوجة كالماء.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let hasSoap = false;
+  let isDropping = false;
+
+  function switchTab(index) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+    contents.forEach((content, i) => content.classList.toggle('active', i === index));
+  }
+
+  // 1. ضغط السائل
+  function runPressure() {
+    const h = parseFloat(document.getElementById('depth-range').value);
+    const rho = parseFloat(document.getElementById('fluid-type').value);
+    document.getElementById('depth-text').innerText = h + ' متر';
+    
+    const p = Math.round(rho * 9.81 * h);
+    const atm = (p / 101325).toFixed(2);
+    document.getElementById('p-val').innerText = 'Pa ' + p.toLocaleString();
+    document.getElementById('p-atm').innerText = 'أو ما يعادل ' + atm + ' atm';
+    
+    document.getElementById('sensor').style.top = (h * 40) + 'px';
+    document.getElementById('sensor-label').innerText = 'عمق الحساس: ' + h + 'm';
+  }
+
+  // 2. قوة الطفو
+  function runBuoyancy() {
+    const m = parseFloat(document.getElementById('mass-range').value);
+    const v = parseFloat(document.getElementById('vol-range').value);
+    const rho = parseFloat(document.getElementById('buoy-fluid').value);
+    
+    document.getElementById('mass-text').innerText = m + ' كجم';
+    
+    const fg = (m * 9.81).toFixed(1);
+    const fb = (rho * v * 9.81).toFixed(1);
+    
+    document.getElementById('fg-val').innerText = 'N ' + fg;
+    document.getElementById('fb-val').innerText = 'N ' + fb;
+    
+    const obj = document.getElementById('b-obj');
+    const status = document.getElementById('buoy-status');
+    
+    if (parseFloat(fb) >= parseFloat(fg)) {
+      obj.style.top = '15px';
+      status.className = 'status-pill status-green';
+      status.innerText = 'حالة الجسم: يطفو على السطح (Fb > Fg)';
+    } else {
+      obj.style.top = '100px';
+      status.className = 'status-pill status-red';
+      status.innerText = 'حالة الجسم: يغرق في القاع (Fg > Fb)';
+    }
+  }
+
+  // 3. مبدأ باسكال
+  function runPascal() {
+    const f1 = parseFloat(document.getElementById('f1-range').value);
+    const a1 = parseFloat(document.getElementById('a1-range').value);
+    const a2 = parseFloat(document.getElementById('a2-range').value);
+    
+    document.getElementById('f1-text').innerText = 'N ' + f1;
+    
+    const ratio = (a2 / a1);
+    const f2 = Math.round(f1 * ratio);
+    
+    document.getElementById('f2-val').innerText = 'N ' + f2.toLocaleString();
+    document.getElementById('ratio-val').innerText = 'نسبة مضاعفة القوة: الفائدة = ' + ratio.toFixed(1) + ' مرة';
+    
+    const pSmall = document.getElementById('piston-small');
+    const pLarge = document.getElementById('piston-large');
+    
+    pSmall.style.top = (20 + (f1 / 10)) + 'px';
+    pLarge.style.top = (50 - (f1 / 20)) + 'px';
+  }
+
+  // 4. التوتر السطحي
+  function runSurface() {
+    const w = parseInt(document.getElementById('surf-weight').value);
+    const clip = document.getElementById('paperclip');
+    const status = document.getElementById('surf-status');
+
+    if (w > 7 || hasSoap) {
+      clip.style.top = '65px';
+      status.className = 'status-pill status-red';
+      status.innerText = hasSoap ? 'حالة المشبك: غرق بسبب تفكك غشاء التوتر السطحي (بسبب الصابون)' : 'حالة المشبك: غرق بسبب زيادة الوزن عن تحمل السطح';
+    } else {
+      clip.style.top = '10px';
+      status.className = 'status-pill status-green';
+      status.innerText = 'حالة المشبك: يطفو بفعل غشاء التوتر السطحي القوي';
+    }
+  }
+
+  function addSoap() {
+    hasSoap = true;
+    runSurface();
+  }
+
+  // 5. اللزوجة
+  function resetBall() {
+    const ball = document.getElementById('v-ball');
+    ball.style.transition = 'none';
+    ball.style.top = '15px';
+    isDropping = false;
+  }
+
+  function dropBall() {
+    if (isDropping) return;
+    isDropping = true;
+    const timeSec = parseFloat(document.getElementById('visc-select').value);
+    const ball = document.getElementById('v-ball');
+    
+    document.getElementById('timer-val').innerText = timeSec.toFixed(2) + ' ثانية';
+    ball.style.transition = `top ${timeSec}s linear`;
+    ball.style.top = '135px';
+    
+    setTimeout(() => { isDropping = false; }, timeSec * 1000);
+  }
+
+  // Initial Run
+  runPressure();
+  runBuoyancy();
+  runPascal();
+  runSurface();
+</script>
+
+</body>
+</html>
         افتح الرابط
     </a>
 
