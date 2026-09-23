@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 غرفة الهروب: خصائص الموائع</title>
+  <style>
+    :root {
+      --bg-dark: #0a0f1d;
+      --card-bg: #131b2e;
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-gold: #fbbf24;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --correct-color: #10b981;
+      --wrong-color: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0a0f1d 100%);
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 850px;
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid #334155;
+      padding: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Screen Management */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Welcome Screen */
+    .welcome-title {
+      text-align: center;
+      font-size: 2.2rem;
+      color: var(--accent-cyan);
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(0,242,254,0.3);
+    }
+    .welcome-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .topic-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .badge {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rules-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    .rules-card h3 { color: var(--accent-gold); margin-bottom: 10px; font-size: 1.1rem; }
+    .rules-card ul { list-style: none; }
+    .rules-card li { margin-bottom: 8px; color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+
+    .btn-start {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,242,254,0.3);
+    }
+
+    /* Game Header / Status Bar */
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background: #0f172a;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+    .room-number { font-weight: bold; color: var(--accent-cyan); }
+    .timer-display { font-weight: bold; color: var(--accent-gold); font-size: 1.1rem; }
+
+    .timer-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--accent-cyan);
+      transition: width 1s linear, background-color 0.3s;
+    }
+
+    /* Question & Options */
+    .question-box {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .option-btn {
+      background: #1e293b;
+      border: 2px solid #334155;
+      padding: 14px 18px;
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 1rem;
+      text-align: right;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--accent-cyan);
+      background: #273549;
+    }
+    .option-btn.correct {
+      border-color: var(--correct-color);
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-weight: bold;
+    }
+    .option-btn.wrong {
+      border-color: var(--wrong-color);
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    /* Action Footer */
+    .action-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-hint {
+      background: #334155;
+      color: var(--accent-gold);
+      border: 1px solid var(--accent-gold);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .btn-hint:hover { background: rgba(251, 191, 36, 0.1); }
+
+    .btn-next {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+      transition: 0.2s;
+    }
+    .btn-next:hover { background: #0284c7; }
+
+    .hint-box {
+      display: none;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid var(--accent-gold);
+      color: #fef08a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    /* Success / Victory Screen */
+    .victory-box {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .victory-icon { font-size: 4rem; margin-bottom: 15px; }
+    .victory-title { color: var(--accent-cyan); font-size: 2rem; margin-bottom: 10px; }
+    .victory-desc { color: var(--text-muted); margin-bottom: 15px; line-height: 1.6; }
+    
+    .time-taken-badge {
+      display: inline-block;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 25px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+
+  <!-- 1. شاشة البداية والمعلومات -->
+  <div id="welcomeScreen" class="screen active">
+    <h1 class="welcome-title">🔐 غرفة الهروب: خصائص الموائع</h1>
+    <p class="welcome-subtitle">هل يمكنك فتح 10 أبواب فيزيائية بالاعتماد على معرفتك بالسوائل والغازات؟</p>
+
+    <div class="topic-badges">
+      <div class="badge">💧 تعريف الموائع</div>
+      <div class="badge">📐 قانون الضغط</div>
+      <div class="badge">🏔️ الضغط الجوي</div>
+      <div class="badge">🎈 قانون الغازات</div>
+      <div class="badge">🔥 التمدد الحراري</div>
+      <div class="badge">🧊 شذوذ الماء والطفو</div>
+      <div class="badge">⚡ حالة البلازما</div>
+    </div>
+
+    <div class="rules-card">
+      <h3>📜 قواعد تحدي غرفة الهروب:</h3>
+      <ul>
+        <li>⏱️ لديك <b>15 ثانية فقط</b> للإجابة على كل سؤال.</li>
+        <li>🔑 لا يمكنك فتح الباب والانتقال للسؤال التالي حتى تختار <b>الإجابة الصحيحة</b>.</li>
+        <li>💡 يمكنك طلب <b>تلميح بسيط</b> إذا احتجت مساعدة.</li>
+        <li>🚫 انتهاء الوقت قبل الاختيار يجبرك على المحاولة مرة أخرى!</li>
+      </ul>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">بدء التحدي ودخول الغرفة الأولى 🚀</button>
+  </div>
+
+  <!-- 2. شاشة الأسئلة واللعب -->
+  <div id="gameScreen" class="screen">
+    <div class="game-header">
+      <div class="room-number" id="roomProgress">🚪 الباب 1 من 10</div>
+      <div class="timer-display">⏳ المتبقي: <span id="timeText">15</span> ثانية</div>
+    </div>
+
+    <div class="timer-bar-container">
+      <div class="timer-bar" id="timerBar"></div>
+    </div>
+
+    <div class="question-box" id="questionText">جاري تحميل السؤال...</div>
+
+    <div class="options-grid" id="optionsContainer">
+      <!-- أزرار الخيارات تتولد تلقائياً -->
+    </div>
+
+    <div class="hint-box" id="hintBox">💡 تلميح: ...</div>
+
+    <div class="action-footer">
+      <button class="btn-hint" onclick="toggleHint()">💡 طلب تلميح</button>
+      <button class="btn-next" id="nextBtn" onclick="nextQuestion()">الباب التالي 🚪 ➡️</button>
+    </div>
+  </div>
+
+  <!-- 3. شاشة الهروب والنهاية -->
+  <div id="victoryScreen" class="screen">
+    <div class="victory-box">
+      <div class="victory-icon">🏆🔓</div>
+      <h2 class="victory-title">تهانينا! لقد نجحت في الهروب!</h2>
+      <p class="victory-desc">تمكنت من فتح جميع الأبواب العشرة وتجاوز تحديات مختبر خصائص الموائع بنجاح واقتدار.</p>
+      
+      <div class="time-taken-badge" id="totalTimeDisplay">
+        ⏱️ الوقت المستغرق: 00:00
+      </div>
+
+      <button class="btn-start" onclick="resetGame()">إعادة اللعب من جديد 🔄</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const rawQuestions = [
+    {
+      q: "السؤال الأول: ما هي الموائع؟",
+      options: [
+        { text: "مواد تتدفق وليس لها شكل محدد", isCorrect: true },
+        { text: "مواد صلبة لها شكل وحجم ثابتين", isCorrect: false },
+        { text: "مواد قابلة للانضغاط فقط ولا تتدفق", isCorrect: false },
+        { text: "مواد ليس لها كتلة ولا شغل", isCorrect: false }
+      ],
+      hint: "فكر في خاصية الجريان وعدم ثبات الشكل لدى السوائل والغازات."
+    },
+    {
+      q: "السؤال الثاني: تؤثر قوة مقدارها 100 N عمودياً على مساحة مقدارها 2 m²، كم يبلغ الضغط الناتج؟",
+      options: [
+        { text: "50 Pa", isCorrect: true },
+        { text: "200 Pa", isCorrect: false },
+        { text: "100 Pa", isCorrect: false },
+        { text: "25 Pa", isCorrect: false }
+      ],
+      hint: "اقسم القوة المطبقة على المساحة."
+    },
+    {
+      q: "السؤال الثالث: كلما ارتفعنا عن سطح الأرض، ماذا يحدث للضغط الجوي؟",
+      options: [
+        { text: "يقل", isCorrect: true },
+        { text: "يزداد", isCorrect: false },
+        { text: "يبقى ثابتاً", isCorrect: false },
+        { text: "يتضاعف طردياً", isCorrect: false }
+      ],
+      hint: "فكر في وزن عمود الهواء فوقك عند الصعود لقمة جبل."
+    },
+    {
+      q: "السؤال الرابع: غاز تغيرت كافة متغيراته (الضغط والحجم والحرارة معاً)، ما القانون المناسب لحسابه؟",
+      options: [
+        { text: "القانون العام للغازات", isCorrect: true },
+        { text: "قانون بويل فقط", isCorrect: false },
+        { text: "قانون شارل فقط", isCorrect: false },
+        { text: "قانون باسكال", isCorrect: false }
+      ],
+      hint: "ابحث عن القانون الشامل الذي يربط القوانين الثلاثة معاً."
+    },
+    {
+      q: "السؤال الخامس: أي الحالات التالية هي الأكثر تمدداً بالحرارة؟",
+      options: [
+        { text: "الأوكسجين (حالة غازية)", isCorrect: true },
+        { text: "العصير (حالة سائلة)", isCorrect: false },
+        { text: "الصخر (حالة صلبة)", isCorrect: false },
+        { text: "الحديد (حالة صلبة)", isCorrect: false }
+      ],
+      hint: "الحالة ذات الجزيئات الأكثر حرية وتباعداً تتمدد بشكل أكبر."
+    },
+    {
+      q: "السؤال السادس: من التطبيقات الهامة على التمدد الحراري:",
+      options: [
+        { text: "تيارات الحمل الحراري", isCorrect: true },
+        { text: "المكبس الهيدروليكي", isCorrect: false },
+        { text: "طفو السفن على الماء", isCorrect: false },
+        { text: "ظاهرة التوتر السطحي", isCorrect: false }
+      ],
+      hint: "تعتمد على تغير الكثافة بالحرارة وصعود المائع الساخن لأعلى."
+    },
+    {
+      q: "السؤال السابع: لماذا يطفو الجليد فوق ماء البحر؟",
+      options: [
+        { text: "لأن كثافة الماء عند 4°C أكبر من كثافة الجليد", isCorrect: true },
+        { text: "لأن كثافة الجليد أكبر من كثافة الماء", isCorrect: false },
+        { text: "بسبب زيادة التوتر السطحي لماء البحر", isCorrect: false },
+        { text: "بسبب لزوجة الثلج العالية", isCorrect: false }
+      ],
+      hint: "يتمدد الماء بشكل استثنائي عند التجمد مما يقلل كثافته."
+    },
+    {
+      q: "السؤال الثامن: الحالة شبه الغازية للإلكترونات السالبة والأيونات الموجبة تسمى:",
+      options: [
+        { text: "البلازما", isCorrect: true },
+        { text: "الحالة الصلبة", isCorrect: false },
+        { text: "الحالة السائلة", isCorrect: false },
+        { text: "الحالة الغازية الخاملة", isCorrect: false }
+      ],
+      hint: "تُعرف بالحالة الرابعة للمادة وتوجد في النجوم والغازات المتأينة."
+    },
+    {
+      q: "السؤال التاسع: من التطبيقات الشائعة على البلازما:",
+      options: [
+        { text: "إشارات النيون", isCorrect: true },
+        { text: "الترمومتر الزئبقي", isCorrect: false },
+        { text: "الفرامل الهيدروليكية", isCorrect: false },
+        { text: "مناطيد الهواء الساخن", isCorrect: false }
+      ],
+      hint: "أنبوب إضاءة يحتوي على غاز متأين يتوهج عند مرور الكهرباء."
+    },
+    {
+      q: "السؤال العاشر: بماذا تختلف البلازما عن الغازات العادية؟",
+      options: [
+        { text: "القدرة على التوصيل الكهربائي", isCorrect: true },
+        { text: "عدم قدرتها على الجريان", isCorrect: false },
+        { text: "أن لها حجماً ثابتاً", isCorrect: false },
+        { text: "خلوها التام من الأيونات الشحنية", isCorrect: false }
+      ],
+      hint: "وجود الشحنات والأيونات الحرة يمنحها ميزة كهربائية خاصة."
+    }
+  ];
+
+  let currentIdx = 0;
+  let timer = null;
+  let timeLeft = 15;
+  let answeredCorrectly = false;
+  let currentQuestions = [];
+  let startTime = null;
+
+  function shuffle(array) {
+    let arr = JSON.parse(JSON.stringify(array));
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+
+  function startGame() {
+    currentIdx = 0;
+    startTime = new Date(); // تسجيل وقت بداية اللعب
+    currentQuestions = rawQuestions.map(item => {
+      return {
+        q: item.q,
+        options: shuffle(item.options),
+        hint: item.hint
+      };
+    });
+
+    showScreen('gameScreen');
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    answeredCorrectly = false;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('hintBox').style.display = 'none';
+    
+    const qData = currentQuestions[currentIdx];
+    document.getElementById('roomProgress').innerText = `🚪 الباب ${currentIdx + 1} من ${currentQuestions.length}`;
+    document.getElementById('questionText').innerText = qData.q;
+    document.getElementById('hintBox').innerText = '💡 تلميح: ' + qData.hint;
+
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+
+    qData.options.forEach((optObj) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = optObj.text;
+      btn.onclick = () => checkAnswer(optObj.isCorrect, btn);
+      optionsContainer.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timeLeft = 15;
+    updateTimerUI();
+
+    timer = setInterval(() => {
+      timeLeft--;
+      updateTimerUI();
+
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        handleTimeOut();
+      }
+    }, 1000);
+  }
+
+  function updateTimerUI() {
+    document.getElementById('timeText').innerText = timeLeft;
+    const bar = document.getElementById('timerBar');
+    const percentage = (timeLeft / 15) * 100;
+    bar.style.width = percentage + '%';
+
+    if (timeLeft <= 5) {
+      bar.style.backgroundColor = 'var(--wrong-color)';
+    } else {
+      bar.style.backgroundColor = 'var(--accent-cyan)';
+    }
+  }
+
+  function handleTimeOut() {
+    if (answeredCorrectly) return;
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(btn => btn.disabled = true);
+    
+    alert("⏰ انتهى الوقت! أُغلق الباب. أعِد المحاولة لهذه الغرفة!");
+    currentQuestions[currentIdx].options = shuffle(currentQuestions[currentIdx].options);
+    loadQuestion();
+  }
+
+  function checkAnswer(isCorrect, btn) {
+    if (answeredCorrectly) return;
+
+    const btns = document.querySelectorAll('.option-btn');
+
+    if (isCorrect) {
+      clearInterval(timer);
+      answeredCorrectly = true;
+      btn.classList.add('correct');
+      btns.forEach(b => b.disabled = true);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+    }
+  }
+
+  function toggleHint() {
+    const hintBox = document.getElementById('hintBox');
+    hintBox.style.display = hintBox.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function nextQuestion() {
+    currentIdx++;
+    if (currentIdx < currentQuestions.length) {
+      loadQuestion();
+    } else {
+      finishGame();
+    }
+  }
+
+  function finishGame() {
+    const endTime = new Date();
+    const timeDiffSeconds = Math.floor((endTime - startTime) / 1000);
+    
+    const minutes = Math.floor(timeDiffSeconds / 60);
+    const seconds = timeDiffSeconds % 60;
+    
+    let timeText = "";
+    if (minutes > 0) {
+      timeText = `${minutes} دقيقة و ${seconds} ثانية`;
+    } else {
+      timeText = `${seconds} ثانية`;
+    }
+
+    document.getElementById('totalTimeDisplay').innerText = `⏱️ الوقت المستغرق: ${timeText}`;
+    showScreen('victoryScreen');
+  }
+
+  function resetGame() {
+    showScreen('welcomeScreen');
+  }
+</script>
+
+</body>
+</html>
